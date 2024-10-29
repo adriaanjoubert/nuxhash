@@ -4,14 +4,14 @@ from pathlib import Path
 from shutil import rmtree
 
 
-DOWNLOADS_PATH = Path(os.path.dirname(__file__))/'downloadables'
+DOWNLOADS_PATH = Path(os.path.dirname(__file__)) / "downloadables"
 
 
 class Downloadable(object):
 
     def __init__(self, config_dir, dir_name, script_name, name):
-        self.dir = config_dir/dir_name
-        self.script = DOWNLOADS_PATH/script_name
+        self.dir = config_dir / dir_name
+        self.script = DOWNLOADS_PATH / script_name
         self.name = name
 
     def run_script(self, *args):
@@ -19,7 +19,7 @@ class Downloadable(object):
 
     def verify(self):
         if self.dir.is_dir():
-            return self.run_script('verify') == 0
+            return self.run_script("verify") == 0
         else:
             return False
 
@@ -31,11 +31,8 @@ class Downloadable(object):
                 rmtree(child)
             else:
                 os.remove(child)
-        self.run_script('download')
+        self.run_script("download")
 
 
 def make_miners(config_dir):
-    return [
-        Downloadable(config_dir, 'excavator', 'excavator.sh', 'NiceHash excavator')
-        ]
-
+    return [Downloadable(config_dir, "excavator", "excavator.sh", "NiceHash excavator")]

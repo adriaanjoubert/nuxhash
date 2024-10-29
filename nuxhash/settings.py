@@ -6,33 +6,23 @@ from collections import defaultdict
 from pathlib import Path
 
 
-DEFAULT_CONFIGDIR = Path(os.path.expanduser('~/.config/nuxhash'))
-SETTINGS_FILENAME = 'settings.conf'
-BENCHMARKS_FILENAME = 'benchmarks.json'
+DEFAULT_CONFIGDIR = Path(os.path.expanduser("~/.config/nuxhash"))
+SETTINGS_FILENAME = "settings.conf"
+BENCHMARKS_FILENAME = "benchmarks.json"
 DEFAULT_SETTINGS = {
-    'nicehash': {
-        'wallet': '',
-        'workername': 'nuxhash',
-        'region': 'usa',
-        'api_organization': '',
-        'api_key': '',
-        'api_secret': ''
-        },
-    'switching': {
-        'interval': 60,
-        'threshold': 0.1
-        },
-    'gui': {
-        'units': 'mBTC'
-        },
-    'donate': {
-        'optout': False
-        },
-    'excavator_miner': {
-        'listen': '',
-        'args': ''
-        }
-    }
+    "nicehash": {
+        "wallet": "",
+        "workername": "nuxhash",
+        "region": "usa",
+        "api_organization": "",
+        "api_key": "",
+        "api_secret": "",
+    },
+    "switching": {"interval": 60, "threshold": 0.1},
+    "gui": {"units": "mBTC"},
+    "donate": {"optout": False},
+    "excavator_miner": {"listen": "", "args": ""},
+}
 EMPTY_BENCHMARKS = defaultdict(lambda: {})
 
 
@@ -40,33 +30,26 @@ def read_settings_from_file(fd):
     parser = configparser.ConfigParser()
     parser.read_file(fd)
     methods = {
-        'nicehash': {
-            'wallet': parser.get,
-            'workername': parser.get,
-            'region': parser.get,
-            'api_organization': parser.get,
-            'api_key': parser.get,
-            'api_secret': parser.get
-            },
-        'switching': {
-            'interval': parser.getint,
-            'threshold': parser.getfloat
-            },
-        'gui': {
-            'units': parser.get
-            },
-        'donate': {
-            'optout': parser.getboolean
-            },
-        'excavator_miner': {
-            'listen': parser.get,
-            'args': parser.get
-            }
-        }
+        "nicehash": {
+            "wallet": parser.get,
+            "workername": parser.get,
+            "region": parser.get,
+            "api_organization": parser.get,
+            "api_key": parser.get,
+            "api_secret": parser.get,
+        },
+        "switching": {"interval": parser.getint, "threshold": parser.getfloat},
+        "gui": {"units": parser.get},
+        "donate": {"optout": parser.getboolean},
+        "excavator_miner": {"listen": parser.get, "args": parser.get},
+    }
+
     def read_options(data, *sections):
         if isinstance(data, dict):
-            return {key: read_options(item, *(sections + (key,)))
-                    for key, item in data.items()}
+            return {
+                key: read_options(item, *(sections + (key,)))
+                for key, item in data.items()
+            }
         elif callable(data):
             try:
                 return data(*sections)
@@ -77,6 +60,7 @@ def read_settings_from_file(fd):
                 return value
         else:
             raise ValueError
+
     return read_options(methods)
 
 
@@ -94,8 +78,7 @@ def read_benchmarks_from_file(fd, devices):
     benchmarks = defaultdict(lambda: {})
     js = json.load(fd)
     for js_device in js:
-        device = next((device for device in devices
-                       if str(device) == js_device), None)
+        device = next((device for device in devices if str(device) == js_device), None)
         if device is None:
             continue
         js_speeds = js[js_device]
@@ -122,7 +105,7 @@ def write_benchmarks_to_file(fd, benchmarks):
 
 def load_settings(config_dir):
     try:
-        with open(config_dir/SETTINGS_FILENAME, 'r') as settings_fd:
+        with open(config_dir / SETTINGS_FILENAME, "r") as settings_fd:
             settings = read_settings_from_file(settings_fd)
     except IOError as err:
         if err.errno != errno.ENOENT:
@@ -134,7 +117,7 @@ def load_settings(config_dir):
 
 def load_benchmarks(config_dir, devices):
     try:
-        with open(config_dir/BENCHMARKS_FILENAME, 'r') as benchmarks_fd:
+        with open(config_dir / BENCHMARKS_FILENAME, "r") as benchmarks_fd:
             benchmarks = read_benchmarks_from_file(benchmarks_fd, devices)
     except IOError as err:
         if err.errno != errno.ENOENT:
@@ -146,13 +129,13 @@ def load_benchmarks(config_dir, devices):
 
 def save_settings(config_dir, settings):
     _mkdir(config_dir)
-    with open(config_dir/SETTINGS_FILENAME, 'w') as settings_fd:
+    with open(config_dir / SETTINGS_FILENAME, "w") as settings_fd:
         write_settings_to_file(settings_fd, settings)
 
 
 def save_benchmarks(config_dir, benchmarks):
     _mkdir(config_dir)
-    with open(config_dir/BENCHMARKS_FILENAME, 'w') as benchmarks_fd:
+    with open(config_dir / BENCHMARKS_FILENAME, "w") as benchmarks_fd:
         write_benchmarks_to_file(benchmarks_fd, benchmarks)
 
 
@@ -162,4 +145,3 @@ def _mkdir(d):
     except OSError:
         if not os.path.isdir(d):
             raise
-

@@ -13,7 +13,7 @@ from tests import get_test_devices
 devices = nvidia_devices()
 
 
-@unittest.skipIf(len(devices) == 0, 'requires an nvidia graphics card')
+@unittest.skipIf(len(devices) == 0, "requires an nvidia graphics card")
 class TestExcavator(unittest.TestCase):
 
     def setUp(self):
@@ -21,18 +21,20 @@ class TestExcavator(unittest.TestCase):
         self.device = devices[0]
 
         self.settings = nuxhash.settings.DEFAULT_SETTINGS
-        self.settings['nicehash']['wallet'] = DONATE_ADDRESS
+        self.settings["nicehash"]["wallet"] = DONATE_ADDRESS
 
         self.alt_settings = nuxhash.settings.DEFAULT_SETTINGS
-        self.alt_settings['nicehash']['wallet'] = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'
-        self.alt_settings['nicehash']['workername'] = 'nuxhashtest'
+        self.alt_settings["nicehash"]["wallet"] = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+        self.alt_settings["nicehash"]["workername"] = "nuxhashtest"
 
         self.excavator = Excavator(self.configdir)
         self.excavator.settings = self.settings
-        self.equihash = next(a for a in self.excavator.algorithms
-                             if a.algorithms == ['equihash'])
-        self.neoscrypt = next(a for a in self.excavator.algorithms
-                              if a.algorithms == ['neoscrypt'])
+        self.equihash = next(
+            a for a in self.excavator.algorithms if a.algorithms == ["equihash"]
+        )
+        self.neoscrypt = next(
+            a for a in self.excavator.algorithms if a.algorithms == ["neoscrypt"]
+        )
 
         make_miners(self.configdir)
         self.excavator.load()
@@ -41,23 +43,30 @@ class TestExcavator(unittest.TestCase):
         self.excavator.unload()
 
     def _get_workers(self):
-        response = self.excavator.server.send_command('worker.list', [])
-        def algorithms(worker): return [a['name'] for a in worker['algorithms']]
-        return [{ 'device_uuid': w['device_uuid'],
-                  'algorithms': algorithms(w) } for w in response['workers']]
+        response = self.excavator.server.send_command("worker.list", [])
+
+        def algorithms(worker):
+            return [a["name"] for a in worker["algorithms"]]
+
+        return [
+            {"device_uuid": w["device_uuid"], "algorithms": algorithms(w)}
+            for w in response["workers"]
+        ]
 
     def _get_algorithms(self):
-        response = self.excavator.server.send_command('algorithm.list', [])
-        return [a['name'] for a in response['algorithms']]
+        response = self.excavator.server.send_command("algorithm.list", [])
+        return [a["name"] for a in response["algorithms"]]
 
     def test_add_worker(self):
         self.equihash.set_devices([self.device])
-        self.assertEqual(self._get_workers(), [{ 'device_uuid': self.device.uuid,
-                                                 'algorithms': ['equihash'] }])
+        self.assertEqual(
+            self._get_workers(),
+            [{"device_uuid": self.device.uuid, "algorithms": ["equihash"]}],
+        )
 
     def test_add_algorithm(self):
         self.equihash.set_devices([self.device])
-        self.assertEqual(self._get_algorithms(), ['equihash'])
+        self.assertEqual(self._get_algorithms(), ["equihash"])
 
     def test_remove_worker(self):
         self.equihash.set_devices([self.device])
@@ -80,15 +89,17 @@ class TestExcavator(unittest.TestCase):
         sleep(1)
         self.equihash.set_devices([])
         self.neoscrypt.set_devices([self.device])
-        self.assertEqual(self._get_workers(), [{ 'device_uuid': self.device.uuid,
-                                                 'algorithms': ['neoscrypt'] }])
+        self.assertEqual(
+            self._get_workers(),
+            [{"device_uuid": self.device.uuid, "algorithms": ["neoscrypt"]}],
+        )
 
     def test_switch_algorithm(self):
         self.equihash.set_devices([self.device])
         sleep(1)
         self.equihash.set_devices([])
         self.neoscrypt.set_devices([self.device])
-        self.assertEqual(self._get_algorithms(), ['neoscrypt'])
+        self.assertEqual(self._get_algorithms(), ["neoscrypt"])
 
     def test_simultaneous_worker(self):
         self.equihash.set_devices([self.device])
@@ -96,8 +107,10 @@ class TestExcavator(unittest.TestCase):
         self.neoscrypt.set_devices([self.device])
         sleep(1)
         self.equihash.set_devices([])
-        self.assertEqual(self._get_workers(), [{ 'device_uuid': self.device.uuid,
-                                                 'algorithms': ['neoscrypt'] }])
+        self.assertEqual(
+            self._get_workers(),
+            [{"device_uuid": self.device.uuid, "algorithms": ["neoscrypt"]}],
+        )
 
     def test_simultaneous_algorithm(self):
         self.equihash.set_devices([self.device])
@@ -105,20 +118,22 @@ class TestExcavator(unittest.TestCase):
         self.neoscrypt.set_devices([self.device])
         sleep(1)
         self.equihash.set_devices([])
-        self.assertEqual(self._get_algorithms(), ['neoscrypt'])
+        self.assertEqual(self._get_algorithms(), ["neoscrypt"])
 
     def test_set_twice(self):
         self.equihash.set_devices([self.device])
         sleep(1)
         self.equihash.set_devices([self.device])
-        self.assertEqual(self._get_algorithms(), ['equihash'])
+        self.assertEqual(self._get_algorithms(), ["equihash"])
 
     def test_benchmark_mode(self):
         self.equihash.set_devices([self.device])
         sleep(1)
         self.equihash.benchmarking = True
-        self.assertEqual(self._get_workers(), [{ 'device_uuid': self.device.uuid,
-                                                 'algorithms': ['equihash'] }])
+        self.assertEqual(
+            self._get_workers(),
+            [{"device_uuid": self.device.uuid, "algorithms": ["equihash"]}],
+        )
 
     def test_benchmark_stop(self):
         self.equihash.benchmarking = True
@@ -133,21 +148,22 @@ class TestExcavator(unittest.TestCase):
 
     def test_set_bad_device(self):
         devices = get_test_devices()
-        self.assertRaises(AssertionError,
-                          lambda: self.equihash.set_devices(devices))
+        self.assertRaises(AssertionError, lambda: self.equihash.set_devices(devices))
 
     def test_settings_switch(self):
         self.equihash.set_devices([self.device])
         sleep(1)
         self.excavator.settings = self.alt_settings
-        self.assertEqual(self._get_workers(), [{ 'device_uuid': self.device.uuid,
-                                                 'algorithms': ['equihash'] }])
+        self.assertEqual(
+            self._get_workers(),
+            [{"device_uuid": self.device.uuid, "algorithms": ["equihash"]}],
+        )
 
     def test_settings_switch_algorithm(self):
         self.equihash.set_devices([self.device])
         sleep(1)
         self.excavator.settings = self.alt_settings
-        self.assertEqual(self._get_algorithms(), ['equihash'])
+        self.assertEqual(self._get_algorithms(), ["equihash"])
 
     def test_settings_switch_back(self):
         self.equihash.set_devices([self.device])
@@ -163,12 +179,11 @@ class TestExcavator(unittest.TestCase):
         self.equihash.set_devices([self.device])
         status = (self._get_workers(), self._get_algorithms())
         sleep(1)
-        call(['killall', 'excavator'])
+        call(["killall", "excavator"])
         sleep(1)
         self.equihash.current_speeds()
         self.assertEqual(status, (self._get_workers(), self._get_algorithms()))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-

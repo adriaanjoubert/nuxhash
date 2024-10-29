@@ -37,16 +37,16 @@ class MiningScreen(wx.Panel):
         self._Devices = devices
         self._Settings = self._Benchmarks = None
 
-        pub.subscribe(self._OnSettings, 'data.settings')
-        pub.subscribe(self._OnBenchmarks, 'data.benchmarks')
+        pub.subscribe(self._OnSettings, "data.settings")
+        pub.subscribe(self._OnBenchmarks, "data.benchmarks")
 
-        pub.subscribe(self._OnStartBenchmarking, 'benchmarking.start')
-        pub.subscribe(self._OnStopBenchmarking, 'benchmarking.stop')
+        pub.subscribe(self._OnStartBenchmarking, "benchmarking.start")
+        pub.subscribe(self._OnStopBenchmarking, "benchmarking.stop")
 
-        pub.subscribe(self._OnClose, 'app.close')
+        pub.subscribe(self._OnClose, "app.close")
 
-        pub.subscribe(self._OnNewBalances, 'nicehash.balances')
-        pub.subscribe(self._OnMiningStatus, 'mining.status')
+        pub.subscribe(self._OnNewBalances, "nicehash.balances")
+        pub.subscribe(self._OnMiningStatus, "mining.status")
 
         sizer = wx.BoxSizer(orient=wx.VERTICAL)
         self.SetSizer(sizer)
@@ -54,42 +54,41 @@ class MiningScreen(wx.Panel):
         # Update balance periodically.
         self._Timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self._OnBalanceTimer, self._Timer)
-        self._Timer.Start(milliseconds=BALANCE_UPDATE_MIN*60*1e3)
+        self._Timer.Start(milliseconds=BALANCE_UPDATE_MIN * 60 * 1e3)
 
         # Add mining panel.
         self._Panel = MiningPanel(self, style=wx.dataview.DV_HORIZ_RULES)
-        sizer.Add(self._Panel, wx.SizerFlags().Border(wx.LEFT|wx.RIGHT|wx.TOP,
-                                                      main.PADDING_PX)
-                                              .Proportion(1.0)
-                                              .Expand())
+        sizer.Add(
+            self._Panel,
+            wx.SizerFlags()
+            .Border(wx.LEFT | wx.RIGHT | wx.TOP, main.PADDING_PX)
+            .Proportion(1.0)
+            .Expand(),
+        )
 
         bottomSizer = wx.BoxSizer(orient=wx.HORIZONTAL)
-        sizer.Add(bottomSizer, wx.SizerFlags().Border(wx.ALL, main.PADDING_PX)
-                                              .Expand())
+        sizer.Add(bottomSizer, wx.SizerFlags().Border(wx.ALL, main.PADDING_PX).Expand())
 
         # Add balance displays.
         balances = wx.FlexGridSizer(2, 2, main.PADDING_PX)
         balances.AddGrowableCol(1)
         bottomSizer.Add(balances, wx.SizerFlags().Proportion(1.0).Expand())
 
-        balances.Add(wx.StaticText(self, label='Daily revenue'))
-        self._Revenue = wx.StaticText(
-            self, style=wx.ALIGN_RIGHT|wx.ST_NO_AUTORESIZE)
+        balances.Add(wx.StaticText(self, label="Daily revenue"))
+        self._Revenue = wx.StaticText(self, style=wx.ALIGN_RIGHT | wx.ST_NO_AUTORESIZE)
         self._Revenue.SetFont(self.GetFont().Bold())
         balances.Add(self._Revenue, wx.SizerFlags().Expand())
 
-        balances.Add(wx.StaticText(self, label='Balance (unpaid)'))
-        self._Balances = wx.StaticText(
-            self, style=wx.ALIGN_RIGHT|wx.ST_NO_AUTORESIZE)
+        balances.Add(wx.StaticText(self, label="Balance (unpaid)"))
+        self._Balances = wx.StaticText(self, style=wx.ALIGN_RIGHT | wx.ST_NO_AUTORESIZE)
         self._Balances.SetFont(self.GetFont().Bold())
         balances.Add(self._Balances, wx.SizerFlags().Expand())
 
         bottomSizer.AddSpacer(main.PADDING_PX)
 
         # Add start/stop button.
-        self._StartStop = wx.Button(self, label='Start Mining')
-        bottomSizer.Add(self._StartStop, wx.SizerFlags().Expand()
-                                                        .Center())
+        self._StartStop = wx.Button(self, label="Start Mining")
+        bottomSizer.Add(self._StartStop, wx.SizerFlags().Expand().Center())
         self.Bind(wx.EVT_BUTTON, self.OnStartStop, self._StartStop)
 
     def _OnSettings(self, settings):
@@ -112,10 +111,12 @@ class MiningScreen(wx.Panel):
         self._UpdateMining()
 
     def _UpdateMining(self):
-        if (self._Benchmarks is not None
+        if (
+            self._Benchmarks is not None
             and not self._Benchmarking
-            and check_bc(self._Settings['nicehash']['wallet'])
-            and any(self._Benchmarks[device] != {} for device in self._Devices)):
+            and check_bc(self._Settings["nicehash"]["wallet"])
+            and any(self._Benchmarks[device] != {} for device in self._Devices)
+        ):
             if self._Thread:
                 # TODO: Update mining thread more gracefully?
                 self._StopMining()
@@ -134,16 +135,19 @@ class MiningScreen(wx.Panel):
         self._UpdateBalances()
 
     def _UpdateBalances(self):
-        address = self._Settings['nicehash']['wallet']
+        address = self._Settings["nicehash"]["wallet"]
         if check_bc(address):
+
             def do_requests(address, target):
                 wallet, unpaid = get_balances(self._Settings)
-                main.sendMessage(target, 'nicehash.balances',
-                                 wallet=wallet, unpaid=unpaid)
+                main.sendMessage(
+                    target, "nicehash.balances", wallet=wallet, unpaid=unpaid
+                )
+
             thread = threading.Thread(target=do_requests, args=(address, self))
             thread.start()
         else:
-            pub.sendMessage('nicehash.balances', wallet=None, unpaid=None)
+            pub.sendMessage("nicehash.balances", wallet=None, unpaid=None)
 
     def OnStartStop(self, event):
         if not self._Thread:
@@ -152,37 +156,39 @@ class MiningScreen(wx.Panel):
             self._StopMining()
 
     def _StartMining(self):
-        pub.sendMessage('mining.start')
-        self._StartStop.SetLabel('Stop Mining')
+        pub.sendMessage("mining.start")
+        self._StartStop.SetLabel("Stop Mining")
         self._Thread = MiningThread(
-                devices=self._Devices, window=self,
-                settings=deepcopy(self._Settings),
-                benchmarks=deepcopy(self._Benchmarks))
+            devices=self._Devices,
+            window=self,
+            settings=deepcopy(self._Settings),
+            benchmarks=deepcopy(self._Benchmarks),
+        )
         self._Thread.start()
 
     def _StopMining(self):
-        pub.sendMessage('mining.stop')
-        self._Revenue.SetLabel('')
-        self._StartStop.SetLabel('Start Mining')
+        pub.sendMessage("mining.stop")
+        self._Revenue.SetLabel("")
+        self._StartStop.SetLabel("Start Mining")
         self._Thread.stop()
         self._Thread = None
 
     def _OnNewBalances(self, wallet, unpaid):
         if unpaid is not None:
-            unit = self._Settings['gui']['units']
+            unit = self._Settings["gui"]["units"]
             unpaid_str = utils.format_balance(unpaid, unit)
             if wallet is not None:
                 wallet_str = utils.format_balance(wallet, unit)
-                label = f'{wallet_str} ({unpaid_str})'
+                label = f"{wallet_str} ({unpaid_str})"
             else:
-                label = f'api keys required ({unpaid_str})'
+                label = f"api keys required ({unpaid_str})"
         else:
-            label = ''
+            label = ""
         self._Balances.SetLabel(label)
 
     def _OnMiningStatus(self, speeds, revenue, devices):
         totalRevenue = sum(revenue.values())
-        unit = self._Settings['gui']['units']
+        unit = self._Settings["gui"]["units"]
         self._Revenue.SetLabel(utils.format_balance(totalRevenue, unit))
 
 
@@ -192,19 +198,24 @@ class MiningPanel(wx.dataview.DataViewListCtrl):
         wx.dataview.DataViewListCtrl.__init__(self, parent, *args, **kwargs)
         self._Settings = None
         self.Disable()
-        self.AppendTextColumn('Algorithm', width=wx.COL_WIDTH_AUTOSIZE)
+        self.AppendTextColumn("Algorithm", width=wx.COL_WIDTH_AUTOSIZE)
         self.AppendColumn(
-                wx.dataview.DataViewColumn('Devices', DeviceListRenderer(),
-                                           1, align=wx.ALIGN_LEFT,
-                                           width=wx.COL_WIDTH_AUTOSIZE),
-                'string')
-        self.AppendTextColumn('Speed', width=wx.COL_WIDTH_AUTOSIZE)
-        self.AppendTextColumn('Revenue')
+            wx.dataview.DataViewColumn(
+                "Devices",
+                DeviceListRenderer(),
+                1,
+                align=wx.ALIGN_LEFT,
+                width=wx.COL_WIDTH_AUTOSIZE,
+            ),
+            "string",
+        )
+        self.AppendTextColumn("Speed", width=wx.COL_WIDTH_AUTOSIZE)
+        self.AppendTextColumn("Revenue")
 
-        pub.subscribe(self._OnSettings, 'data.settings')
-        pub.subscribe(self._OnStartMining, 'mining.start')
-        pub.subscribe(self._OnStopMining, 'mining.stop')
-        pub.subscribe(self._OnMiningStatus, 'mining.status')
+        pub.subscribe(self._OnSettings, "data.settings")
+        pub.subscribe(self._OnStartMining, "mining.start")
+        pub.subscribe(self._OnStopMining, "mining.stop")
+        pub.subscribe(self._OnMiningStatus, "mining.status")
 
     def _OnSettings(self, settings):
         if settings != self._Settings:
@@ -222,14 +233,20 @@ class MiningPanel(wx.dataview.DataViewListCtrl):
         algorithms = list(speeds.keys())
         algorithms.sort(key=lambda algorithm: algorithm.name)
         for algorithm in algorithms:
-            algo_sublist = ', '.join(algorithm.algorithms)
-            algo = f'{algorithm.name}\n({algo_sublist})'
-            devicesStr = ','.join([DeviceListRenderer._DeviceToString(device)
-                                   for device in devices[algorithm]])
-            speed = ',\n'.join([utils.format_speed(speed)
-                                for speed in speeds[algorithm]])
+            algo_sublist = ", ".join(algorithm.algorithms)
+            algo = f"{algorithm.name}\n({algo_sublist})"
+            devicesStr = ",".join(
+                [
+                    DeviceListRenderer._DeviceToString(device)
+                    for device in devices[algorithm]
+                ]
+            )
+            speed = ",\n".join(
+                [utils.format_speed(speed) for speed in speeds[algorithm]]
+            )
             pay = utils.format_balance(
-                revenue[algorithm], self._Settings['gui']['units'])
+                revenue[algorithm], self._Settings["gui"]["units"]
+            )
             self.AppendItem([algo, devicesStr, speed, pay])
 
 
@@ -243,58 +260,66 @@ class DeviceListRenderer(wx.dataview.DataViewCustomRenderer):
         self._ColorDb = wx.ColourDatabase()
 
     def SetValue(self, value):
-        vendors = { 'N': 'nvidia' }
-        self._Devices = [{ 'name': s[2:], 'vendor': vendors[s[0]] }
-                         for s in value.split(',')]
+        vendors = {"N": "nvidia"}
+        self._Devices = [
+            {"name": s[2:], "vendor": vendors[s[0]]} for s in value.split(",")
+        ]
         return True
 
     def GetValue(self):
-        tags = { 'nvidia': 'N' }
-        return ','.join([f"{tags[device['vendor']]}:{device['name']}"
-                         for device in self._Devices])
+        tags = {"nvidia": "N"}
+        return ",".join(
+            [f"{tags[device['vendor']]}:{device['name']}" for device in self._Devices]
+        )
 
     def GetSize(self):
-        boxes = [self.GetTextExtent(device['name']) for device in self._Devices]
+        boxes = [self.GetTextExtent(device["name"]) for device in self._Devices]
         RADIUS = DeviceListRenderer.CORNER_RADIUS
-        return wx.Size(max(box.GetWidth() for box in boxes) + RADIUS*2,
-                       (sum(box.GetHeight() for box in boxes)
-                        + RADIUS*2*len(boxes) + RADIUS*(len(boxes) - 1)))
+        return wx.Size(
+            max(box.GetWidth() for box in boxes) + RADIUS * 2,
+            (
+                sum(box.GetHeight() for box in boxes)
+                + RADIUS * 2 * len(boxes)
+                + RADIUS * (len(boxes) - 1)
+            ),
+        )
 
     def Render(self, cell, dc, state):
         position = cell.GetPosition()
         for device in self._Devices:
-            box = self.GetTextExtent(device['name'])
+            box = self.GetTextExtent(device["name"])
             RADIUS = DeviceListRenderer.CORNER_RADIUS
 
-            if device['vendor'] == 'nvidia':
-                color = self._ColorDb.Find('LIME GREEN')
+            if device["vendor"] == "nvidia":
+                color = self._ColorDb.Find("LIME GREEN")
             else:
-                color = self._ColorDb.Find('LIGHT GREY')
+                color = self._ColorDb.Find("LIGHT GREY")
             dc.SetBrush(wx.Brush(color))
             dc.SetPen(wx.TRANSPARENT_PEN)
             shadeRect = wx.Rect(
-                    position,
-                    wx.Size(box.GetWidth() + RADIUS*2, box.GetHeight() + RADIUS*2))
+                position,
+                wx.Size(box.GetWidth() + RADIUS * 2, box.GetHeight() + RADIUS * 2),
+            )
             dc.DrawRoundedRectangle(shadeRect, RADIUS)
 
-            textRect = wx.Rect(
-                    wx.Point(position.x + RADIUS, position.y + RADIUS), box)
-            self.RenderText(device['name'], 0, textRect, dc, state)
+            textRect = wx.Rect(wx.Point(position.x + RADIUS, position.y + RADIUS), box)
+            self.RenderText(device["name"], 0, textRect, dc, state)
 
             position = wx.Point(
-                    position.x, (position.y + box.GetHeight() + RADIUS*2 + RADIUS))
+                position.x, (position.y + box.GetHeight() + RADIUS * 2 + RADIUS)
+            )
         return True
 
     def _DeviceToString(device):
         if isinstance(device, NvidiaDevice):
             name = device.name
-            name = name.replace('GeForce', '')
-            name = name.replace('GTX', '')
-            name = name.replace('RTX', '')
+            name = name.replace("GeForce", "")
+            name = name.replace("GTX", "")
+            name = name.replace("RTX", "")
             name = name.strip()
-            return f'N:{name}'
+            return f"N:{name}"
         else:
-            raise Exception('bad device instance')
+            raise Exception("bad device instance")
 
 
 class MiningThread(threading.Thread):
@@ -303,8 +328,13 @@ class MiningThread(threading.Thread):
     STATUS_PRIORITY = 2
     STOP_PRIORITY = 0
 
-    def __init__(self, devices=[], window=None,
-                 settings=DEFAULT_SETTINGS, benchmarks=EMPTY_BENCHMARKS):
+    def __init__(
+        self,
+        devices=[],
+        window=None,
+        settings=DEFAULT_SETTINGS,
+        benchmarks=EMPTY_BENCHMARKS,
+    ):
         threading.Thread.__init__(self)
         self._window = window
         self._settings = settings
@@ -313,7 +343,8 @@ class MiningThread(threading.Thread):
         self._payrates = (None, None)
         self._stop_signal = threading.Event()
         self._scheduler = sched.scheduler(
-            time.time, lambda t: self._stop_signal.wait(t))
+            time.time, lambda t: self._stop_signal.wait(t)
+        )
 
     def run(self):
         # Initialize miners.
@@ -323,7 +354,7 @@ class MiningThread(threading.Thread):
                 payrates = nicehash.simplemultialgo_info(self._settings)
                 stratums = nicehash.stratums(self._settings)
             except Exception as err:
-                logging.warning(f'NiceHash stats: {err}, retrying in 5 seconds')
+                logging.warning(f"NiceHash stats: {err}, retrying in 5 seconds")
                 time.sleep(5)
             else:
                 self._payrates = payrates
@@ -351,48 +382,63 @@ class MiningThread(threading.Thread):
         try:
             ret_payrates = nicehash.simplemultialgo_info(self._settings)
         except Exception as err:
-            logging.warning(f'NiceHash stats: {err}')
+            logging.warning(f"NiceHash stats: {err}")
         else:
             self._payrates = (ret_payrates, datetime.now())
 
-        interval = self._settings['switching']['interval']
+        interval = self._settings["switching"]["interval"]
         payrates, payrates_time = self._payrates
 
         # Calculate BTC/day rates.
         def revenue(device, algorithm):
             benchmarks = self._benchmarks[device]
             if algorithm.name in benchmarks:
-                return sum([payrates[sub_algo]*benchmarks[algorithm.name][i]
-                            if sub_algo in payrates else 0.0
-                            for i, sub_algo in enumerate(algorithm.algorithms)])
+                return sum(
+                    [
+                        (
+                            payrates[sub_algo] * benchmarks[algorithm.name][i]
+                            if sub_algo in payrates
+                            else 0.0
+                        )
+                        for i, sub_algo in enumerate(algorithm.algorithms)
+                    ]
+                )
             else:
                 return 0.0
-        revenues = {device: {algorithm: revenue(device, algorithm)
-                             for algorithm in self._algorithms}
-                    for device in self._devices}
+
+        revenues = {
+            device: {
+                algorithm: revenue(device, algorithm) for algorithm in self._algorithms
+            }
+            for device in self._devices
+        }
 
         # Get device -> algorithm assignments from profit switcher.
         assigned_algorithm = self._profit_switch.decide(revenues, payrates_time)
         self._assignments = assigned_algorithm
         for this_algorithm in self._algorithms:
-            this_devices = [device for device, algorithm
-                            in assigned_algorithm.items()
-                            if algorithm == this_algorithm]
+            this_devices = [
+                device
+                for device, algorithm in assigned_algorithm.items()
+                if algorithm == this_algorithm
+            ]
             this_algorithm.set_devices(this_devices)
 
         # Donation time.
-        if not self._settings['donate']['optout'] and random() < DONATE_PROB:
-            logging.warning('This interval will be donation time.')
+        if not self._settings["donate"]["optout"] and random() < DONATE_PROB:
+            logging.warning("This interval will be donation time.")
             donate_settings = deepcopy(self._settings)
-            donate_settings['nicehash']['wallet'] = DONATE_ADDRESS
-            donate_settings['nicehash']['workername'] = 'nuxhash'
+            donate_settings["nicehash"]["wallet"] = DONATE_ADDRESS
+            donate_settings["nicehash"]["workername"] = "nuxhash"
             for miner in self._miners:
                 miner.settings = donate_settings
-            self._scheduler.enter(interval, MiningThread.PROFIT_PRIORITY,
-                                  self._reset_miners)
+            self._scheduler.enter(
+                interval, MiningThread.PROFIT_PRIORITY, self._reset_miners
+            )
 
-        self._scheduler.enter(interval, MiningThread.PROFIT_PRIORITY,
-                              self._switch_algos)
+        self._scheduler.enter(
+            interval, MiningThread.PROFIT_PRIORITY, self._switch_algos
+        )
 
     def _reset_miners(self):
         for miner in self._miners:
@@ -401,23 +447,39 @@ class MiningThread(threading.Thread):
     def _read_status(self):
         payrates, payrates_time = self._payrates
         running_algorithms = self._assignments.values()
-        speeds = {algorithm: algorithm.current_speeds()
-                  for algorithm in running_algorithms}
-        revenue = {algorithm: sum([payrates[sub_algo]*speeds[algorithm][i]
-                                  for i, sub_algo
-                                  in enumerate(algorithm.algorithms)])
-                   for algorithm in running_algorithms}
-        devices = {algorithm: [device for device, this_algorithm
-                               in self._assignments.items()
-                               if this_algorithm == algorithm]
-                   for algorithm in running_algorithms}
-        main.sendMessage(self._window, 'mining.status',
-                         speeds=speeds, revenue=revenue, devices=devices)
-        self._scheduler.enter(MINING_UPDATE_SECS, MiningThread.STATUS_PRIORITY,
-                              self._read_status)
+        speeds = {
+            algorithm: algorithm.current_speeds() for algorithm in running_algorithms
+        }
+        revenue = {
+            algorithm: sum(
+                [
+                    payrates[sub_algo] * speeds[algorithm][i]
+                    for i, sub_algo in enumerate(algorithm.algorithms)
+                ]
+            )
+            for algorithm in running_algorithms
+        }
+        devices = {
+            algorithm: [
+                device
+                for device, this_algorithm in self._assignments.items()
+                if this_algorithm == algorithm
+            ]
+            for algorithm in running_algorithms
+        }
+        main.sendMessage(
+            self._window,
+            "mining.status",
+            speeds=speeds,
+            revenue=revenue,
+            devices=devices,
+        )
+        self._scheduler.enter(
+            MINING_UPDATE_SECS, MiningThread.STATUS_PRIORITY, self._read_status
+        )
 
     def _stop_mining(self):
-        logging.info('Stopping mining')
+        logging.info("Stopping mining")
         for algorithm in self._algorithms:
             algorithm.set_devices([])
         for miner in self._miners:
@@ -425,4 +487,3 @@ class MiningThread(threading.Thread):
         # Empty the scheduler.
         for job in self._scheduler.queue:
             self._scheduler.cancel(job)
-

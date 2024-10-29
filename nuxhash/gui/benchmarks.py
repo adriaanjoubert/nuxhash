@@ -30,18 +30,18 @@ class BenchmarksScreen(wx.Panel):
         self._Items = {}
         self._Thread = None
 
-        pub.subscribe(self._OnSettings, 'data.settings')
-        pub.subscribe(self._OnBenchmarks, 'data.benchmarks')
+        pub.subscribe(self._OnSettings, "data.settings")
+        pub.subscribe(self._OnBenchmarks, "data.benchmarks")
 
-        pub.subscribe(self._OnStartMining, 'mining.start')
-        pub.subscribe(self._OnStopMining, 'mining.stop')
+        pub.subscribe(self._OnStartMining, "mining.start")
+        pub.subscribe(self._OnStopMining, "mining.stop")
 
-        pub.subscribe(self._OnClose, 'app.close')
+        pub.subscribe(self._OnClose, "app.close")
 
-        pub.subscribe(self._OnBenchmarkStatus, 'benchmarking.status')
-        pub.subscribe(self._OnBenchmarkSet, 'benchmarking.set')
-        pub.subscribe(self._OnBenchmarkClear, 'benchmarking.clear')
-        pub.subscribe(self._OnBenchmarkStop, 'benchmarking.stop')
+        pub.subscribe(self._OnBenchmarkStatus, "benchmarking.status")
+        pub.subscribe(self._OnBenchmarkSet, "benchmarking.set")
+        pub.subscribe(self._OnBenchmarkClear, "benchmarking.clear")
+        pub.subscribe(self._OnBenchmarkStop, "benchmarking.stop")
 
         self.Bind(EVT_SPEEDS, self.OnInputSpeeds)
 
@@ -51,10 +51,13 @@ class BenchmarksScreen(wx.Panel):
         # Create inner scrolled area.
         innerWindow = ScrolledPanel(self)
         innerWindow.SetupScrolling()
-        sizer.Add(innerWindow, wx.SizerFlags().Border(wx.LEFT|wx.RIGHT|wx.TOP,
-                                                      main.PADDING_PX)
-                                              .Proportion(1.0)
-                                              .Expand())
+        sizer.Add(
+            innerWindow,
+            wx.SizerFlags()
+            .Border(wx.LEFT | wx.RIGHT | wx.TOP, main.PADDING_PX)
+            .Proportion(1.0)
+            .Expand(),
+        )
         innerSizer = wx.BoxSizer(orient=wx.VERTICAL)
         innerWindow.SetSizer(innerSizer)
 
@@ -62,31 +65,31 @@ class BenchmarksScreen(wx.Panel):
         self._DeviceCp = {}
         for device in self._Devices:
             deviceCp = wx.CollapsiblePane(
-                innerWindow, label=f'{device.name}\n{device.uuid}',
-                style=wx.CP_NO_TLW_RESIZE)
-            self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, self.OnPaneChanged,
-                      deviceCp)
+                innerWindow,
+                label=f"{device.name}\n{device.uuid}",
+                style=wx.CP_NO_TLW_RESIZE,
+            )
+            self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, self.OnPaneChanged, deviceCp)
             innerSizer.Add(deviceCp, wx.SizerFlags().Expand())
             self._DeviceCp[device] = deviceCp
 
         bottomSizer = wx.BoxSizer(orient=wx.HORIZONTAL)
-        sizer.Add(bottomSizer, wx.SizerFlags().Border(wx.ALL, main.PADDING_PX)
-                                              .Expand())
+        sizer.Add(bottomSizer, wx.SizerFlags().Border(wx.ALL, main.PADDING_PX).Expand())
 
         # Create bottom controls.
-        self._SelectTodo = wx.Button(self, label='Unmeasured')
+        self._SelectTodo = wx.Button(self, label="Unmeasured")
         self.Bind(wx.EVT_BUTTON, self.OnSelectUnmeasured, self._SelectTodo)
         bottomSizer.Add(self._SelectTodo)
 
         bottomSizer.AddSpacer(main.PADDING_PX)
 
-        self._SelectNone = wx.Button(self, label='None')
+        self._SelectNone = wx.Button(self, label="None")
         self.Bind(wx.EVT_BUTTON, self.OnSelectNone, self._SelectNone)
         bottomSizer.Add(self._SelectNone)
 
         bottomSizer.AddStretchSpacer()
 
-        self._Benchmark = wx.Button(self, label='Benchmark')
+        self._Benchmark = wx.Button(self, label="Benchmark")
         self.Bind(wx.EVT_BUTTON, self.OnBenchmark, self._Benchmark)
         bottomSizer.Add(self._Benchmark)
 
@@ -123,8 +126,9 @@ class BenchmarksScreen(wx.Panel):
             if oldSizer:
                 oldSizer.Clear(True)
 
-            algorithms = [algorithm for algorithm in allAlgorithms
-                          if algorithm.accepts(device)]
+            algorithms = [
+                algorithm for algorithm in allAlgorithms if algorithm.accepts(device)
+            ]
             sizer = wx.FlexGridSizer(len(algorithms), 4, wx.Size(0, 0))
             pane.SetSizer(sizer, deleteOld=True)
             sizer.AddGrowableCol(3)
@@ -141,9 +145,11 @@ class BenchmarksScreen(wx.Panel):
         self.Layout()
 
     def _SelectUnmeasured(self):
-        self._Selection = (
-            [(device, algorithm) for (device, algorithm) in self._Items.keys()
-             if algorithm.name not in self._Benchmarks[device]])
+        self._Selection = [
+            (device, algorithm)
+            for (device, algorithm) in self._Items.keys()
+            if algorithm.name not in self._Benchmarks[device]
+        ]
 
     def OnSelectUnmeasured(self, event):
         self._SelectUnmeasured()
@@ -159,13 +165,13 @@ class BenchmarksScreen(wx.Panel):
             self._SelectNone.Disable()
             for item in self._Items.values():
                 item.checkbox.Disable()
-            self._Benchmark.SetLabel('Cancel')
+            self._Benchmark.SetLabel("Cancel")
 
-            pub.sendMessage('benchmarking.start')
+            pub.sendMessage("benchmarking.start")
 
             self._Thread = BenchmarkThread(
-                selection, window=self,
-                settings=self._Settings, miners=self._Miners)
+                selection, window=self, settings=self._Settings, miners=self._Miners
+            )
             self._Thread.start()
         elif running:
             self._Thread.stop()
@@ -180,14 +186,14 @@ class BenchmarksScreen(wx.Panel):
     def _OnBenchmarkSet(self, target, speeds):
         device, algorithm = target
         self._Benchmarks[device][algorithm.name] = speeds
-        pub.sendMessage('data.benchmarks', benchmarks=self._Benchmarks)
+        pub.sendMessage("data.benchmarks", benchmarks=self._Benchmarks)
         self._ResetSpeedCtrl(device, algorithm)
 
     def _OnBenchmarkClear(self, target):
         device, algorithm = target
         if algorithm.name in self._Benchmarks[device]:
             del self._Benchmarks[device][algorithm.name]
-        pub.sendMessage('data.benchmarks', benchmarks=self._Benchmarks)
+        pub.sendMessage("data.benchmarks", benchmarks=self._Benchmarks)
         self._ResetSpeedCtrl(device, algorithm)
 
     def _OnBenchmarkStop(self):
@@ -200,23 +206,26 @@ class BenchmarksScreen(wx.Panel):
             item.checkbox.Enable()
             # Reset speed controls in case benchmarking was aborted.
             self._ResetSpeedCtrl(device, algorithm)
-        self._Benchmark.SetLabel('Benchmark')
+        self._Benchmark.SetLabel("Benchmark")
 
     def OnPaneChanged(self, event):
         self.Layout()
 
     def OnInputSpeeds(self, event):
         source = event.GetEventObject()
-        target = next((device, algorithm) for ((device, algorithm), item)
-                      in self._Items.items() if item.speeds == source)
+        target = next(
+            (device, algorithm)
+            for ((device, algorithm), item) in self._Items.items()
+            if item.speeds == source
+        )
         device, algorithm = target
         nSpeeds = len(event.speeds)
         nNeeded = len(algorithm.algorithms)
         if nSpeeds >= nNeeded:
             speeds = event.speeds[:nNeeded]
-            pub.sendMessage('benchmarking.set', target=target, speeds=speeds)
+            pub.sendMessage("benchmarking.set", target=target, speeds=speeds)
         elif nSpeeds == 0:
-            pub.sendMessage('benchmarking.clear', target=target)
+            pub.sendMessage("benchmarking.clear", target=target)
         else:
             self._ResetSpeedCtrl(device, algorithm)
 
@@ -224,18 +233,23 @@ class BenchmarksScreen(wx.Panel):
         item = self._Items[(device, algorithm)]
         benchmarks = self._Benchmarks[device]
         item.speeds.SetValues(
-            benchmarks.get(algorithm.name, [0.0]*len(algorithm.algorithms)))
+            benchmarks.get(algorithm.name, [0.0] * len(algorithm.algorithms))
+        )
 
     def _ThreadRunning(self):
         return self._Thread is not None
 
     @property
     def _Selection(self):
-        return [(device, algorithm) for ((device, algorithm), item)
-                in self._Items.items() if item.is_selected()]
+        return [
+            (device, algorithm)
+            for ((device, algorithm), item) in self._Items.items()
+            if item.is_selected()
+        ]
+
     @_Selection.setter
     def _Selection(self, selection):
-        for (device, algorithm) in self._Items.keys():
+        for device, algorithm in self._Items.keys():
             item = self._Items[(device, algorithm)]
             if (device, algorithm) in selection:
                 item.select()
@@ -258,24 +272,36 @@ class BenchmarkThread(threading.Thread):
             miner.load()
 
         for target in self._targets:
+
             def report(sample, secs_remaining):
                 main.sendMessage(
-                        self._window, 'benchmarking.status',
-                        target=target, speeds=sample, time=abs(secs_remaining),
-                        warmup=(secs_remaining < 0))
+                    self._window,
+                    "benchmarking.status",
+                    target=target,
+                    speeds=sample,
+                    time=abs(secs_remaining),
+                    warmup=(secs_remaining < 0),
+                )
+
             device, algorithm = target
             speeds = utils.run_benchmark(
-                algorithm, device, algorithm.warmup_secs, BENCHMARK_SECS,
-                sample_callback=report, abort_signal=self._abort)
+                algorithm,
+                device,
+                algorithm.warmup_secs,
+                BENCHMARK_SECS,
+                sample_callback=report,
+                abort_signal=self._abort,
+            )
             if self._abort.is_set():
                 break
-            main.sendMessage(self._window, 'benchmarking.set',
-                             target=target, speeds=speeds)
+            main.sendMessage(
+                self._window, "benchmarking.set", target=target, speeds=speeds
+            )
 
         for miner in self._miners:
             miner.unload()
 
-        main.sendMessage(self._window, 'benchmarking.stop')
+        main.sendMessage(self._window, "benchmarking.stop")
 
     def stop(self):
         self._abort.set()
@@ -307,52 +333,56 @@ class SpeedCtrl(wx.TextCtrl):
 
     def __init__(self, parent, *args, **kwargs):
         wx.StaticText.__init__(
-                self, parent, *args, style=wx.BORDER_NONE|wx.TE_CENTRE,
-                size=(-1, 20), **kwargs)
+            self,
+            parent,
+            *args,
+            style=wx.BORDER_NONE | wx.TE_CENTRE,
+            size=(-1, 20),
+            **kwargs,
+        )
         self._StatusPos = 0
         self.Bind(wx.EVT_KILL_FOCUS, self._OnUnfocus)
 
     def SetValues(self, values):
         self.Enable()
         if all(speed == 0.0 for speed in values):
-            s = '--'
+            s = "--"
         else:
             speeds = (utils.format_speed(speed).strip() for speed in values)
-            s = '; '.join(speeds)
+            s = "; ".join(speeds)
         self.ChangeValue(s)
 
     def SetWarmup(self, remaining):
         self.Disable()
-        self.ChangeValue(f'warming up ({remaining}) {self._StatusDot()}')
+        self.ChangeValue(f"warming up ({remaining}) {self._StatusDot()}")
 
     def SetBenchmark(self, values, remaining):
         self.Disable()
-        s = '; '.join(utils.format_speed(speed).strip() for speed in values)
-        self.ChangeValue(f'{s} ({remaining}) {self._StatusDot()}')
+        s = "; ".join(utils.format_speed(speed).strip() for speed in values)
+        self.ChangeValue(f"{s} ({remaining}) {self._StatusDot()}")
 
     def _StatusDot(self):
-        s = ''.join('.' if i == self._StatusPos else ' ' for i in range(3))
+        s = "".join("." if i == self._StatusPos else " " for i in range(3))
         self._StatusPos = (self._StatusPos + 1) % 3
         return s
 
     def _OnUnfocus(self, event):
         speeds = []
-        speedsRe = r' *[;,]? *(\d+\.?\d*) *([EePpTtGgMmkK](?:H|H/s)?|(?:H|H/s))'
+        speedsRe = r" *[;,]? *(\d+\.?\d*) *([EePpTtGgMmkK](?:H|H/s)?|(?:H|H/s))"
         for match in re.finditer(speedsRe, self.GetValue()):
             factor = {
-                'E': 1e18,
-                'P': 1e15,
-                'T': 1e12,
-                'G': 1e9,
-                'M': 1e6,
-                'K': 1e3,
-                'H': 1
-                }
+                "E": 1e18,
+                "P": 1e15,
+                "T": 1e12,
+                "G": 1e9,
+                "M": 1e6,
+                "K": 1e3,
+                "H": 1,
+            }
             value = float(match[1])
             unit = match[2][0].upper()
-            speeds.append(value*factor[unit])
+            speeds.append(value * factor[unit])
 
         event = InputSpeedsEvent(speeds=speeds, id=wx.ID_ANY)
         event.SetEventObject(self)
         wx.PostEvent(self, event)
-

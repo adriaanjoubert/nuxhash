@@ -49,6 +49,7 @@ class Miner(object):
     @property
     def settings(self):
         return self._settings
+
     @settings.setter
     def settings(self, v):
         """Change settings during runtime."""
@@ -57,6 +58,7 @@ class Miner(object):
     @property
     def stratums(self):
         return self._stratums
+
     @stratums.setter
     def stratums(self, v):
         """Change pools during runtime."""
@@ -78,7 +80,7 @@ class Algorithm(object):
         self._benchmarking = False
 
     def __repr__(self):
-        return f'<algorithm:{self.name} {self.algorithms}>'
+        return f"<algorithm:{self.name} {self.algorithms}>"
 
     def accepts(self, device):
         """Check if this algorithm will run on this device."""
@@ -91,6 +93,7 @@ class Algorithm(object):
     @property
     def benchmarking(self):
         return self._benchmarking
+
     @benchmarking.setter
     def benchmarking(self, v):
         self._benchmarking = v
@@ -106,14 +109,14 @@ def needs_miner_running(method):
         if not self.parent.is_running():
             self.parent.load()
         return method(self, *args, **kwargs)
+
     return wrapper
 
 
 def log_output(process):
     while process.poll() is None:
-        line = process.stdout.readline().decode('utf-8').rstrip()
-        if line != '':
+        line = process.stdout.readline().decode("utf-8").rstrip()
+        if line != "":
             # Reset terminal colors.
-            logging.debug(line + '\033[0m')
+            logging.debug(line + "\033[0m")
     process.stdout.close()
-

@@ -13,4 +13,3 @@ class ProfitSwitcher(object):
 
         Return dict of device -> algorithm."""
         pass
-

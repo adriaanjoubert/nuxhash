@@ -73,15 +73,19 @@ my_accounts = private_api.get_accounts()
 print(my_accounts)
 
 # Get balance for BTC address
-my_btc_account = private_api.get_accounts_for_currency(currencies['currencies'][0]['currency'])
+my_btc_account = private_api.get_accounts_for_currency(
+    currencies["currencies"][0]["currency"]
+)
 print(my_btc_account)
 
 # Get my active hashpower orders
-my_top_active_x16r_eu_orders = private_api.get_my_active_orders('X16R', 'EU', 10)
+my_top_active_x16r_eu_orders = private_api.get_my_active_orders("X16R", "EU", 10)
 print(my_top_active_x16r_eu_orders)
 
 # Create pool
-new_pool = private_api.create_pool('My best pool', 'X16R', 'the.best.pool.com', 3333, 'mybestcoinaddress', 'x')
+new_pool = private_api.create_pool(
+    "My best pool", "X16R", "the.best.pool.com", 3333, "mybestcoinaddress", "x"
+)
 print(new_pool)
 
 # Get pools
@@ -89,31 +93,46 @@ pools_on_fist_page = private_api.get_my_pools(0, 10)
 print(pools_on_fist_page)
 
 # Create hashpower order
-new_order = private_api.create_hashpower_order('EU', 'STANDARD', 'X16R', 0.123, 0, 0.005, pools_on_fist_page['list'][0]['id'], algorithms)
+new_order = private_api.create_hashpower_order(
+    "EU",
+    "STANDARD",
+    "X16R",
+    0.123,
+    0,
+    0.005,
+    pools_on_fist_page["list"][0]["id"],
+    algorithms,
+)
 print(new_order)
 
 # Refill hashpower order
-refilled_order = private_api.refill_hashpower_order(new_order['id'], 0.005)
+refilled_order = private_api.refill_hashpower_order(new_order["id"], 0.005)
 print(refilled_order)
 
 # Order hashpower set price
-set_price_order = private_api.set_price_hashpower_order(new_order['id'], 0.234, 'X16R', algorithms)
+set_price_order = private_api.set_price_hashpower_order(
+    new_order["id"], 0.234, "X16R", algorithms
+)
 print(set_price_order)
 
 # Order hashpower set limit
-set_limit_order = private_api.set_limit_hashpower_order(new_order['id'], 2.12, 'X16R', algorithms)
+set_limit_order = private_api.set_limit_hashpower_order(
+    new_order["id"], 2.12, "X16R", algorithms
+)
 print(set_limit_order)
 
 # Order hashpower set price and imit
-set_limit_order = private_api.set_price_and_limit_hashpower_order(new_order['id'], 0.235, 1.2, 'X16R', algorithms)
+set_limit_order = private_api.set_price_and_limit_hashpower_order(
+    new_order["id"], 0.235, 1.2, "X16R", algorithms
+)
 print(set_limit_order)
 
 # Remove hashpower order
-delete_hp_order = private_api.cancel_hashpower_order(new_order['id'])
+delete_hp_order = private_api.cancel_hashpower_order(new_order["id"])
 print(delete_hp_order)
 
 # Delete pool
-delete_pool_result = private_api.delete_pool(new_pool['id'])
+delete_pool_result = private_api.delete_pool(new_pool["id"])
 print(delete_pool_result)
 
 
@@ -125,41 +144,59 @@ exchange_info = public_api.get_exchange_markets_info()
 print(exchange_info)
 
 # Get trades for first market
-trades = public_api.get_exchange_trades(exchange_info['symbols'][0]['symbol'])
-print (trades)
+trades = public_api.get_exchange_trades(exchange_info["symbols"][0]["symbol"])
+print(trades)
 
 # Get candlesticks
-candlesticks = public_api.get_candlesticks(exchange_info['symbols'][0]['symbol'], 1561896404, 1567080464, 60)
-print (candlesticks)
+candlesticks = public_api.get_candlesticks(
+    exchange_info["symbols"][0]["symbol"], 1561896404, 1567080464, 60
+)
+print(candlesticks)
 
 # Get exchange orderbook
-exchange_orderbook = public_api.get_exchange_orderbook(exchange_info['symbols'][0]['symbol'], 10)
-print (exchange_orderbook)
+exchange_orderbook = public_api.get_exchange_orderbook(
+    exchange_info["symbols"][0]["symbol"], 10
+)
+print(exchange_orderbook)
 
 # Get my exchange orders
-my_exchange_orders = private_api.get_my_exchange_orders(exchange_info['symbols'][0]['symbol'])
-print (my_exchange_orders)
+my_exchange_orders = private_api.get_my_exchange_orders(
+    exchange_info["symbols"][0]["symbol"]
+)
+print(my_exchange_orders)
 
 # Get my exchnage trades
-my_exchange_trades = private_api.get_my_exchange_trades(exchange_info['symbols'][0]['symbol'])
-print (my_exchange_trades)
+my_exchange_trades = private_api.get_my_exchange_trades(
+    exchange_info["symbols"][0]["symbol"]
+)
+print(my_exchange_trades)
 
 # Create buy limit exchange order
-new_sell_limit_order = private_api.create_exchange_limit_order(exchange_info['symbols'][0]['symbol'], 'sell', 10, 0.1)
-print (new_sell_limit_order)
+new_sell_limit_order = private_api.create_exchange_limit_order(
+    exchange_info["symbols"][0]["symbol"], "sell", 10, 0.1
+)
+print(new_sell_limit_order)
 
 # Create sell limit exchange order
-new_buy_limit_order = private_api.create_exchange_limit_order(exchange_info['symbols'][0]['symbol'], 'buy', 0.1, 0.1)
-print (new_buy_limit_order)
+new_buy_limit_order = private_api.create_exchange_limit_order(
+    exchange_info["symbols"][0]["symbol"], "buy", 0.1, 0.1
+)
+print(new_buy_limit_order)
 
 # Create sell market order
-new_sell_market_order = private_api.create_exchange_sell_market_order(exchange_info['symbols'][0]['symbol'], 0.1)
+new_sell_market_order = private_api.create_exchange_sell_market_order(
+    exchange_info["symbols"][0]["symbol"], 0.1
+)
 print(new_sell_market_order)
 
 # Create buy market order
-new_buy_market_order = private_api.create_exchange_buy_market_order(exchange_info['symbols'][0]['symbol'], 0.1)
+new_buy_market_order = private_api.create_exchange_buy_market_order(
+    exchange_info["symbols"][0]["symbol"], 0.1
+)
 print(new_buy_market_order)
 
 # Cancel exchange order
-cancelled_order = private_api.cancel_exchange_order(exchange_info['symbols'][0]['symbol'], my_exchange_orders[0]['orderId'])
+cancelled_order = private_api.cancel_exchange_order(
+    exchange_info["symbols"][0]["symbol"], my_exchange_orders[0]["orderId"]
+)
 print(cancelled_order)
