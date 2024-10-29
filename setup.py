@@ -75,13 +75,13 @@ setup(
     #
     # This field corresponds to the "Home-Page" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#home-page-optional
-    url="https://github.com/YoRyan/nuxhash",  # Optional
+    url="https://github.com/adriaanjoubert/nuxhash",  # Optional
     # This should be your name or the name of the organization which owns the
     # project.
-    author="Ryan Young",  # Optional
+    author="Adriaan Joubert",  # Optional
     # This should be a valid email address corresponding to the author listed
     # above.
-    author_email="ryan@youngryan.com",  # Optional
+    author_email="hello@adriaanjoubert.com",  # Optional
     # Classifiers help users find your project by categorizing it.
     #
     # For a list of valid classifiers, see https://pypi.org/classifiers/
@@ -178,8 +178,7 @@ setup(
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
     project_urls={  # Optional
-        "Bug Reports": "https://github.com/YoRyan/nuxhash/issues",
-        "Say Thanks!": "https://youngryan.com",
-        "Source": "https://github.com/YoRyan/nuxhash",
+        "Bug Reports": "https://github.com/adriaanjoubert/nuxhash/issues",
+        "Source": "https://github.com/adriaanjoubert/nuxhash",
     },
 )
