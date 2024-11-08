@@ -57,7 +57,7 @@ Optionally, install this package to enable the GUI interface:
 Then, install nuxhash.
 
 ```
-$ sudo pip3 install git+https://github.com/adriaanjoubert/nuxhash
+$ pipx install git+https://github.com/adriaanjoubert/nuxhash
 ```
 
 To start the daemon, run `nuxhashd`. To start the graphical interface, run `nuxhash-gui`.
